@@ -37,9 +37,15 @@ body{
   min-height:100vh;
   min-width:320px;
   overflow-x:hidden;
+  display:flex;
+  flex-direction:column;
   padding:0 0 40px;
 }
-.wrap{max-width:420px;margin:0 auto;padding:0 clamp(14px,4vw,20px)}
+/* фіксована ширина 420px; на екранах вужчих за 420 автоматично звужується до 100% екрана.
+   Бокові поля завжди рівно 20px, не масштабуються і не залежать від ширини екрана. */
+.wrap{width:420px;max-width:100%;margin:0 auto;padding:0 20px}
+/* центруємо вміст по вертикалі, якщо контент коротший за екран - прибирає зайвий порожній фон знизу */
+body>.wrap{flex:1 0 auto;display:flex;flex-direction:column;justify-content:center}
 
 /* ---------- progress ---------- */
 .topbar{
@@ -228,7 +234,6 @@ em{font-family:'Lora',Georgia,serif;font-style:italic}
 .restart{display:block;margin:22px auto 0;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 
 @media(max-width:374px){
-  .wrap{padding:0 14px}
   .card{padding:15px}
   .opt{padding:12px 13px}
   .diag{padding:18px 15px}
