@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=420, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Який сценарій керує вашим життям зараз</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +18,7 @@
     if(tg.requestFullscreen) tg.requestFullscreen();
     if(tg.setHeaderColor) tg.setHeaderColor('#0F1D17');
     if(tg.setBackgroundColor) tg.setBackgroundColor('#0B1611');
+    if(tg.disableVerticalSwipes) tg.disableVerticalSwipes();
   }catch(e){}
 })();
 </script>
@@ -37,16 +38,14 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{
-  width:420px;
-  max-width:420px;
-  margin:0 auto;
+  width:100%;
   overflow-x:hidden;
   -webkit-text-size-adjust:100%;
   text-size-adjust:100%;
   background:#0B1611;
 }
 body{
-  width:420px;
+  width:100%;
   max-width:420px;
   margin:0 auto;
   background:
@@ -59,6 +58,7 @@ body{
   font-family:'Inter',system-ui,-apple-system,sans-serif;
   font-size:16px;line-height:1.55;
   min-height:100vh;
+  min-height:var(--tg-viewport-stable-height,100vh);
   overflow-x:hidden;
   padding:0 0 40px;
 }
