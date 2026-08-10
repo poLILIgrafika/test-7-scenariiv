@@ -35,17 +35,11 @@ body{
   font-family:'Inter',system-ui,-apple-system,sans-serif;
   font-size:16px;line-height:1.55;
   min-height:100vh;
-  min-width:320px;
+  min-width:365px;
   overflow-x:hidden;
-  display:flex;
-  flex-direction:column;
   padding:0 0 40px;
 }
-/* без обмеження ширини - контент завжди займає весь екран/вікно, ніякого поля навколо не утворюється.
-   Бокові відступи від краю екрана завжди рівно 20px, фіксовані, не залежать від ширини екрана. */
-.wrap{width:100%;margin:0 auto;padding:0 20px}
-/* центруємо вміст по вертикалі, якщо контент коротший за екран - прибирає зайвий порожній фон знизу */
-body>.wrap{flex:1 0 auto;display:flex;flex-direction:column;justify-content:center}
+.wrap{width:100%;min-width:365px;max-width:420px;margin:0 auto;padding:0 clamp(14px,4vw,20px)}
 
 /* ---------- progress ---------- */
 .topbar{
@@ -234,6 +228,7 @@ em{font-family:'Lora',Georgia,serif;font-style:italic}
 .restart{display:block;margin:22px auto 0;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 
 @media(max-width:374px){
+  .wrap{padding:0 14px}
   .card{padding:15px}
   .opt{padding:12px 13px}
   .diag{padding:18px 15px}
