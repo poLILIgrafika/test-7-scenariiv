@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Який сценарій керує вашим життям зараз</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap&subset=cyrillic" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --paper:#14241D;
+  --paper-2:#1C2F26;
+  --ink:#F0EDE0;
+  --ink-2:#C2CDC4;
+  --muted:#87998C;
+  --line:#2E453A;
+  --clay:#D9B24F;
+  --clay-soft:rgba(217,178,79,.13);
+  --clay-deep:#EBC96A;
+  --green:#0E1A15;
+  --green-mid:#6FA285;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:
+    radial-gradient(1100px 560px at 12% -8%, rgba(217,178,79,.13), transparent 60%),
+    radial-gradient(900px 520px at 108% 8%, rgba(111,162,133,.16), transparent 55%),
+    radial-gradient(1000px 700px at 50% 115%, rgba(217,178,79,.07), transparent 60%),
+    linear-gradient(180deg, #17291F 0%, #0F1D17 55%, #0B1611 100%);
+  background-attachment:fixed;
+  color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:16px;line-height:1.55;
+  min-height:100vh;
+  padding:0 0 40px;
+}
+.wrap{max-width:640px;margin:0 auto;padding:0 20px}
+
+/* ---------- progress ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:rgba(15,29,23,.78);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  padding:14px 0 18px;
+  border-bottom:1px solid rgba(217,178,79,.08);
+}
+.track{height:4px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+.fill{height:100%;width:0;border-radius:4px;transition:width .45s cubic-bezier(.4,0,.2,1);
+  background:linear-gradient(90deg,#B8872E,#F0D27A 60%,#FBE7AE);
+  box-shadow:0 0 12px rgba(217,178,79,.55);}
+.step-label{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:9px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)
+}
+
+/* ---------- screens ---------- */
+.screen{display:none;animation:rise .45s cubic-bezier(.16,1,.3,1)}
+.screen.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+h1{font-family:'Lora',Georgia,serif;font-weight:500;font-size:30px;line-height:1.2;letter-spacing:-.01em}
+h2{font-family:'Lora',Georgia,serif;font-weight:500;font-size:23px;line-height:1.28;letter-spacing:-.01em}
+h3{font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:600}
+p{color:var(--ink-2)}
+em{font-family:'Lora',Georgia,serif;font-style:italic}
+
+/* ---------- intro ---------- */
+.intro{padding:26px 0 0;text-align:left}
+.eyebrow{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--clay);font-weight:600;margin-bottom:16px}
+.intro h1{margin-bottom:18px}
+.intro p{margin-bottom:14px}
+.rule{height:1px;background:linear-gradient(90deg,transparent,rgba(217,178,79,.45),transparent);margin:26px 0}
+.meta{display:flex;gap:18px;font-size:13px;color:var(--muted);margin-bottom:28px}
+.meta span{display:flex;align-items:center;gap:6px}
+.dot{width:5px;height:5px;border-radius:50%;background:radial-gradient(circle,#FBE7AE,#B8872E);box-shadow:0 0 8px rgba(217,178,79,.65)}
+.note{
+  position:relative;overflow:hidden;
+  background:linear-gradient(165deg,rgba(255,255,255,.045),rgba(255,255,255,0) 45%),linear-gradient(180deg,var(--paper-2),rgba(15,27,21,.75));
+  border:1px solid rgba(217,178,79,.16);border-radius:14px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 16px 32px -20px rgba(0,0,0,.65);
+  padding:18px 20px;font-size:15px;color:var(--ink-2);margin-bottom:28px
+}
+.note strong{color:var(--ink);font-weight:600}
+
+/* ---------- question ---------- */
+.qhead{padding:6px 0 22px}
+.qnum{font-family:'Lora',serif;font-size:13px;color:var(--clay);letter-spacing:.06em;margin-bottom:10px}
+.qhint{font-size:14px;color:var(--muted);margin-top:9px}
+
+.opts{display:flex;flex-direction:column;gap:10px;margin-bottom:26px}
+.opt{
+  display:flex;gap:13px;align-items:flex-start;
+  background:linear-gradient(165deg,rgba(255,255,255,.03),rgba(255,255,255,0) 45%),linear-gradient(180deg,var(--paper-2),rgba(15,27,21,.7));
+  border:1px solid rgba(217,178,79,.13);border-radius:13px;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 22px -16px rgba(0,0,0,.6);
+  padding:15px 16px;cursor:pointer;user-select:none;
+  transition:border-color .18s,background .18s,transform .12s,box-shadow .18s;
+}
+.opt:active{transform:scale(.99)}
+.opt.sel{
+  border-color:rgba(217,178,79,.65);
+  background:linear-gradient(165deg,rgba(217,178,79,.16),rgba(217,178,79,.05));
+  box-shadow:0 0 0 1px rgba(217,178,79,.25) inset,0 10px 26px -14px rgba(217,178,79,.4);
+}
+.box{
+  flex:0 0 21px;height:21px;margin-top:1px;border-radius:6px;
+  border:1.5px solid rgba(217,178,79,.35);background:transparent;
+  display:flex;align-items:center;justify-content:center;transition:.18s
+}
+.opt.sel .box{background:linear-gradient(135deg,#F5DFA0,#D9B24F 55%,#B8872E);border-color:transparent;box-shadow:0 2px 10px rgba(217,178,79,.55)}
+.box svg{width:12px;height:12px;opacity:0;transform:scale(.6);transition:.18s}
+.opt.sel .box svg{opacity:1;transform:none}
+.opt span{font-size:15.5px;line-height:1.45;color:var(--ink)}
+
+/* ---------- buttons ---------- */
+.btn{
+  position:relative;overflow:hidden;isolation:isolate;
+  display:block;width:100%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#F5DFA0 0%,#D9B24F 45%,#B8872E 100%);
+  color:#1A1305;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:18px;border-radius:13px;text-align:center;text-decoration:none;
+  box-shadow:0 10px 26px -10px rgba(217,178,79,.6),0 2px 6px rgba(0,0,0,.35),0 1px 0 rgba(255,255,255,.35) inset;
+  transition:transform .15s ease,box-shadow .2s ease,filter .2s ease;
+}
+.btn::after{
+  content:"";position:absolute;top:0;left:-160%;width:55%;height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.55),transparent);
+  transform:skewX(-20deg);transition:left .65s ease;pointer-events:none;
+}
+.btn:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 14px 30px -10px rgba(217,178,79,.7),0 3px 8px rgba(0,0,0,.35),0 1px 0 rgba(255,255,255,.35) inset}
+.btn:hover::after{left:160%}
+.btn:active{transform:scale(.98) translateY(0)}
+.btn.clay{background:linear-gradient(135deg,#F5DFA0 0%,#D9B24F 45%,#B8872E 100%)}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid rgba(217,178,79,.25);font-weight:500;box-shadow:none}
+.btn.ghost::after{content:none}
+.btn.ghost:hover{background:rgba(217,178,79,.06);color:var(--ink-2);transform:none;box-shadow:none;filter:none}
+.btn+.btn{margin-top:10px}
+.skip{display:block;width:100%;text-align:center;margin-top:14px;font-size:13.5px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.skip:hover{color:var(--ink-2)}
+
+/* ---------- result ---------- */
+.res-top{padding:20px 0 4px}
+.res-eyebrow{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.res-name{
+  font-family:'Lora',serif;font-size:38px;line-height:1.15;font-weight:500;letter-spacing:-.02em;margin-bottom:10px;
+  background:linear-gradient(135deg,#FBE7AE 0%,#D9B24F 55%,#B8872E 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 18px rgba(217,178,79,.3));
+  display:inline-block;
+}
+.res-share{font-size:14px;color:var(--clay);font-weight:500}
+
+.card{
+  position:relative;
+  background:linear-gradient(165deg,rgba(255,255,255,.035),rgba(255,255,255,0) 45%),linear-gradient(180deg,var(--paper-2),rgba(15,27,21,.72));
+  border:1px solid rgba(217,178,79,.14);border-radius:16px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 18px 36px -22px rgba(0,0,0,.65);
+  padding:20px;margin-bottom:14px
+}
+.card h3{margin-bottom:10px}
+.card p{font-size:15.5px}
+.card p+p{margin-top:10px}
+
+/* bars */
+.bars{margin:6px 0 4px}
+.bar-row{margin-bottom:13px}
+.bar-row:last-child{margin-bottom:0}
+.bar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;gap:12px}
+.bar-name{font-size:14.5px;color:var(--ink)}
+.bar-row.lead .bar-name{font-weight:600}
+.bar-val{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.bar-track{height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+.bar-fill{height:100%;width:0;background:#46604F;border-radius:4px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.bar-row.lead .bar-fill{background:linear-gradient(90deg,#B8872E,#F0D27A 60%,#FBE7AE);box-shadow:0 0 10px rgba(217,178,79,.5)}
+.bar-row.second .bar-fill{background:linear-gradient(90deg,#3E5A48,var(--green-mid))}
+
+/* intensity */
+.gauge{display:flex;gap:4px;margin:12px 0 10px}
+.gauge i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.06);box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
+.gauge i.on{background:linear-gradient(180deg,#F5DFA0,#B8872E);box-shadow:0 0 8px rgba(217,178,79,.5)}
+.gauge-txt{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.gauge-txt b{color:var(--ink);font-weight:600}
+
+.price li{list-style:none;display:flex;gap:11px;font-size:15.5px;color:var(--ink-2);margin-bottom:11px;line-height:1.45}
+.price li:last-child{margin-bottom:0}
+.price li::before{content:"";flex:0 0 6px;height:6px;margin-top:8px;border-radius:50%;background:linear-gradient(135deg,#F5DFA0,#B8872E);box-shadow:0 0 6px rgba(217,178,79,.6)}
+.price li b{color:var(--ink);font-weight:600}
+
+.step-card{
+  background:linear-gradient(165deg,rgba(217,178,79,.16),rgba(217,178,79,.04) 60%),linear-gradient(180deg,var(--paper-2),rgba(15,27,21,.72));
+  border-color:rgba(217,178,79,.35);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 18px 34px -20px rgba(217,178,79,.22);
+}
+.step-card h3{color:var(--clay-deep)}
+
+.diag{
+  position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#152417,#0A1410 75%);
+  border:1px solid rgba(217,178,79,.3);border-radius:16px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 24px 48px -24px rgba(0,0,0,.7);
+  padding:24px 22px;margin:20px 0 14px
+}
+.diag::before{
+  content:"";position:absolute;top:-45%;right:-25%;width:75%;height:150%;
+  background:radial-gradient(circle,rgba(217,178,79,.22),transparent 62%);
+  pointer-events:none;
+}
+.diag>*{position:relative}
+.diag h2{
+  font-size:22px;margin-bottom:9px;
+  background:linear-gradient(135deg,#FBE7AE,#D9B24F 60%,#B8872E);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.diag p{color:#9DB2A4;font-size:15px;margin-bottom:14px}
+.diag ul{list-style:none}
+.diag li{color:#DCE6DD;font-size:15px;display:flex;gap:11px;margin-bottom:9px;line-height:1.45}
+.diag li::before{content:"✦";color:var(--clay);flex:0 0 auto;font-size:13px}
+.diag .btn{margin-top:18px}
+
+.footnote{font-size:13px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.5}
+.restart{display:block;margin:22px auto 0;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+@media(min-width:600px){
+  body{padding-bottom:60px}
+  h1{font-size:36px}
+  .res-name{font-size:46px}
+  .intro{padding-top:44px}
+  .card{padding:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar" style="display:none">
+  <div class="wrap">
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="step-label"><span id="stepnow">Крок 1 з 8</span><span id="stepname"></span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- INTRO -->
+  <section class="screen on" id="s-intro">
+    <div class="intro">
+      <div class="eyebrow">Авторське дослідження · Мар’яна Герасименко</div>
+      <h1>Який сценарій керує вашим життям просто зараз</h1>
+      <p>У кожної з нас працює кілька несвідомих сценаріїв. Але в певний період один вмикається частіше за інші. І саме він тихо вирішує, з ким ви поруч, скільки просите за свою роботу і на що наважуєтесь.</p>
+      <div class="note">
+        <strong>Одне прохання.</strong> Не поспішайте відповідати «це точно про мене» або «це точно не про мене». Наш мозок чудово вміє пояснювати власну поведінку. Дивіться не на те, що ви <em>думаєте</em> про себе. А на те, як ви живете щодня.
+      </div>
+      <div class="rule"></div>
+      <div class="meta">
+        <span><i class="dot"></i>2 хвилини</span>
+        <span><i class="dot"></i>7 екранів</span>
+        <span><i class="dot"></i>без реєстрації</span>
+      </div>
+      <button class="btn" onclick="start()">Почати тест</button>
+    </div>
+  </section>
+
+  <!-- QUESTIONS injected here -->
+  <div id="q-host"></div>
+
+  <!-- SPHERE -->
+  <section class="screen" id="s-sphere">
+    <div class="qhead">
+      <div class="qnum">Останнє питання</div>
+      <h2>Де це відчувається найгостріше просто зараз?</h2>
+      <div class="qhint">Оберіть одну. Ту, де вам найбільше хочеться, щоб нарешті зрушило.</div>
+    </div>
+    <div class="opts" id="sphere-opts"></div>
+    <button class="btn" id="sphere-btn" onclick="finish()">Показати результат</button>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="s-result"></section>
+
+</div>
+
+<script>
+/* ============================================================
+   НАЛАШТУВАННЯ - змінити перед публікацією
+   ============================================================ */
+/* Пряме посилання на Telegram Мар'яни. Без ref-параметра і тегів,
+   людина просто пише напряму. */
+const BOT_LINK = "https://t.me/MaryanaGerasimenko1987";
+
+/* Порядок пріоритету при однаковій кількості галочок.
+   Виграє глибший сценарій, бо саме він зазвичай тримає на собі поверхневий:
+   людина контролює все тому, що недостатня, а не навпаки. */
+const PRIORITY = ["earn","notenough","invisible","save","later","control","good"];
+
+/* ============================================================
+   ДАНІ
+   ============================================================ */
+const SPHERES = [
+  {id:"rel",   t:"Стосунки: партнер, близькі, оточення"},
+  {id:"money", t:"Гроші й робота: дохід, ціна, межі"},
+  {id:"self",  t:"Реалізація: проявленість, своя справа"},
+  {id:"decide",t:"Рішення: знаю, чого хочу, але не роблю"}
+];
+
+const S = [
+{
+  id:"good", name:"Хороша дівчинка",
+  q:[
+    "Я кажу «так», хоча всередині вже все кричить «ні»",
+    "Перш ніж щось вирішити, я подумки прокручую, як на це відреагують інші",
+    "Мені простіше зробити самій, ніж попросити про допомогу",
+    "Назвати свою ціну або попросити більше досі незручно",
+    "«Нічого, я підлаштуюсь» я кажу частіше, ніж «мені так не підходить»"
+  ],
+  outside:"Вас називають доброю, чуйною, надійною. «На тебе завжди можна покластися» ви чуєте роками. За цей сценарій жінки отримують найбільше компліментів.",
+  inside:"Саме тому його найважче запідозрити. Збоку він виглядає як хороше виховання й зрілість. А насправді це звичка жити так, щоб нікому не було незручно. Навіть якщо незручно вам.",
+  price:[
+    ["Стосунки","люди поруч навіть не здогадуються, скільки разів ви погодилися всупереч собі"],
+    ["Гроші","назвати свою вартість це досі найважча розмова"],
+    ["Ви","накопичується втома й глуха образа на тих, хто ні про що вас не просив"]
+  ],
+  step:"Наступного разу, коли захочете сказати «так», зробіть паузу на три секунди. І запитайте себе: я зараз справді обираю це чи просто уникаю чужого невдоволення?",
+  diag:[
+    "у яких конкретно ситуаціях вмикається цей сценарій",
+    "чому чуже невдоволення лякає сильніше, ніж відмова від себе",
+    "як почати відстоювати себе без провини й страху втратити близьких"
+  ]
+},
+{
+  id:"notenough", name:"Я недостатня",
+  q:[
+    "Я відкладаю старт, бо хочу підготуватися ще трохи краще",
+    "Вчитися мені дається значно легше, ніж почати діяти",
+    "Свої помилки я помічаю швидше, ніж свої сильні сторони",
+    "Мені здається, що всі навколо досвідченіші й впевненіші за мене",
+    "Я майже ніколи не відчуваю, що вже достатньо хороша"
+  ],
+  outside:"Ви багато вчитеся, читаєте, розвиваєтеся. Збоку це людина, яка серйозно ставиться до своєї справи. Цей сценарій дуже любить ховатися за розвитком.",
+  inside:"Фінішна точка зміщується щоразу, як ви до неї доходите. Ще один курс, ще один диплом - і тоді вже можна. Тільки справа давно не в знаннях. Справа у відчутті, що поки я недостатньо хороша, мене можуть впіймати на тому, чого я не знаю.",
+  price:[
+    ["Час","роки підготовки до життя, яке давно час просто проживати"],
+    ["Гроші","ви не піднімаєте ціну, бо «ще не заслужила»"],
+    ["Можливості","їх забирають ті, хто знає менше, але не сумнівається"]
+  ],
+  step:"Випишіть три речі, які ви вже вмієте робити добре. Не «непогано». Добре. Якщо це виявилось складно, ось вам і відповідь, наскільки сильно працює сценарій.",
+  diag:[
+    "де вам справді потрібен розвиток, а де ви готуєтеся через страх",
+    "на який досвід ви вже можете спиратися прямо зараз",
+    "що станеться, якщо почати до того, як з’явиться впевненість"
+  ]
+},
+{
+  id:"earn", name:"Заслужити любов",
+  q:[
+    "Я намагаюся бути зручнішою, кращою, потрібнішою, щоб мене цінували",
+    "Турбуватися про інших мені легко, а приймати турботу незручно",
+    "Я залишаюся у стосунках навіть тоді, коли давно відчуваю, що мені в них погано",
+    "Я часто виправдовую людей, які роблять мені боляче",
+    "Мені ніяково, коли мене люблять просто так, без причини"
+  ],
+  outside:"Ви багато віддаєте. Поруч з вами тепло, надійно й зручно. Якщо запитати вас «за що вас можна любити?», відповідь буде не про вас. Вона буде про те, що ви робите для інших.",
+  inside:"Всередині живе рівняння: чим більше я дам, витримаю й пробачу, тим сильніше мене любитимуть. Наче любов це зарплата, яку треба чесно відпрацювати.",
+  price:[
+    ["Стосунки","ви тримаєтеся за людину навіть тоді, коли поруч з нею вам уже погано"],
+    ["Ви","стає ніяково, коли вас люблять просто так. Зате звично боротися за увагу"],
+    ["Питання","«чи добре мені поруч із цією людиною?» ви собі майже не ставите"]
+  ],
+  step:"Наступного разу, коли вам щось запропонують (допомогу, подарунок, увагу), просто скажіть «дякую». Без «та не треба» і без бажання одразу віддячити у відповідь.",
+  diag:[
+    "чому любов пов’язалася з вашою корисністю й терпінням",
+    "як цей сценарій працює саме у ваших стосунках",
+    "що заважає відчувати власну цінність без постійного доведення"
+  ]
+},
+{
+  id:"later", name:"Відкладене життя",
+  q:[
+    "«Спочатку закрию всі справи, а потім займуся собою». Це про мене",
+    "Я не пам’ятаю, коли востаннє робила щось лише тому, що мені цього хотілося",
+    "Я відкладаю відпочинок до моменту, коли стане спокійніше",
+    "У мене завжди знаходиться причина перенести своє «на потім»",
+    "Я думаю: «от ще трохи потерплю, а потім...»"
+  ],
+  outside:"Ви багато працюєте й постійно щось вирішуєте. Діти, батьки, робота, рахунки, чужі проблеми. Ви весь час кудись біжите. Але якщо придивитися, так нікуди й не прибігли.",
+  inside:"Психіка колись засвоїла просте правило: спочатку розберемося з усім, жити будемо потім. Але одна проблема закінчується, з’являється наступна. І «потім» майже ніколи не настає.",
+  price:[
+    ["Час","діти виросли, можливості пройшли, а звичка чекати кращого моменту залишилася"],
+    ["Тіло","воно втомлюється швидше, ніж раніше. І це вже помітно"],
+    ["Сміливість","кожен наступний перший крок стає страшнішим за попередній"]
+  ],
+  step:"Зробіть сьогодні одну маленьку річ виключно тому, що вам цього хочеться. Не корисну. Не потрібну. Не «для когось». Просто вашу.",
+  diag:[
+    "яке рішення ви насправді відкладаєте",
+    "від чого захищає вас це очікування",
+    "перший реальний крок, який можна зробити вже цього тижня"
+  ]
+},
+{
+  id:"save", name:"Я всіх врятую",
+  q:[
+    "Мені складно сказати «ні», навіть коли дуже хочеться",
+    "Я автоматично беру на себе відповідальність за чужі проблеми й емоції",
+    "Якщо я комусь відмовила, потім почуваюся винною",
+    "Я ставлю чужі потреби вище за свої, майже не помічаючи цього",
+    "Я виснажена, але все одно продовжую тягнути все сама"
+  ],
+  outside:"Ви та, хто витягне. Хто вислухає, підтримає, зрозуміє, знайде рішення. І ви щиро не розумієте, чому так втомлюєтеся. Ви ж ніби нічого особливого не робите.",
+  inside:"«Просто вислухала подругу дві години». «Просто допомогла колезі». «Просто залишилася після роботи». Цих «просто» за день набирається стільки, що ввечері немає сил навіть спокійно повечеряти.",
+  price:[
+    ["Сили","допомога непомітно перетворилася на виснаження"],
+    ["Стосунки","люди поруч звикли перекладати на вас свої рішення та їхні наслідки"],
+    ["Всередині","зріє образа: «я стільки для всіх роблю, а про мене ніхто не думає»"]
+  ],
+  step:"Цього тижня один раз скажіть «ні» на прохання, яке ви б автоматично прийняли. І просто подивіться, що станеться. Швидше за все, нічого.",
+  diag:[
+    "чому відмовитися від ролі рятівниці так складно",
+    "де проходить межа між підтримкою і чужою відповідальністю",
+    "що ви відчуваєте в момент, коли обираєте себе"
+  ]
+},
+{
+  id:"control", name:"Контроль",
+  q:[
+    "Мені складно делегувати, бо здається, що ніхто не зробить достатньо добре",
+    "Я прокручую в голові всі «а що, якщо» ще до того, як щось сталося",
+    "Мені важко прийняти, що інша людина зробить по-своєму",
+    "Я беру на себе більше відповідальності, ніж від мене вимагають",
+    "Навіть у відпустці я не можу розслабитися повністю"
+  ],
+  outside:"«На ній усе тримається». Так про вас кажуть. Ви пам’ятаєте всі дати, помічаєте ризики, тримаєте слово й рідко дозволяєте собі помилятися. І це справді дає результат.",
+  inside:"Контроль створює ілюзію безпеки, але забирає внутрішній спокій. Психіка переконує: варто лише відпустити, і все почне руйнуватися. Тому навіть коли навколо тихо, всередині чергує тривога.",
+  price:[
+    ["Відпочинок","розслабитися по-справжньому не виходить ні у відпустці, ні у вихідні"],
+    ["Люди поруч","вони поступово перестають брати відповідальність, бо ви все одно візьмете"],
+    ["Напруга","вона не зникає навіть тоді, коли реальної загрози давно немає"]
+  ],
+  step:"Оберіть одну справу цього тижня, яку зазвичай робите самі, і віддайте її повністю. Без перевірок посередині. Результат може вийти гіршим. І це нормально, у цьому й вправа.",
+  diag:[
+    "від чого саме вас захищає контроль",
+    "чому невизначеність відчувається небезпечною",
+    "як поступово повертати довіру, не втрачаючи внутрішньої опори"
+  ]
+},
+{
+  id:"invisible", name:"Невидимка",
+  q:[
+    "Я знецінюю свої досягнення: «та це нічого особливого»",
+    "Мені незручно говорити про свої перемоги вголос",
+    "Я відкладаю проявленість, поки не стану «ще кращою»",
+    "Критики я боюся більше, ніж втраченої можливості",
+    "Мені часто здається, що інші експерти набагато розумніші за мене"
+  ],
+  outside:"Ззовні скромна людина, яка не лізе вперед. Багато хто навіть не здогадується, що ви вмієте. Ви роками відкладаєте свою справу, соромитеся вести блог, не піднімаєте ціну.",
+  inside:"Всередині одна думка: «а раптом я недостатньо хороша?». І психіка знаходить сотні причин залишитися в тіні. «Ще треба довчитися». «Зараз не найкращий час». «Кому взагалі цікаво, що я скажу?»",
+  price:[
+    ["Реалізація","ваші ідеї залишаються в нотатках"],
+    ["Гроші","ви не піднімаєте ціну й не просите підвищення"],
+    ["Віра в себе","з роками з’являється думка: «напевно, я справді не створена для більшого»"]
+  ],
+  step:"Скажіть уголос одну свою думку там, де зазвичай промовчали б. Не найсміливішу. Найменшу. Просто щоб перевірити, що буде.",
+  diag:[
+    "якої саме реакції ви боїтеся і з яким досвідом вона пов’язана",
+    "у якій точці ви щоразу себе зупиняєте",
+    "безпечний саме для вас спосіб почати проявлятися"
+  ]
+}
+];
+
+const LEVELS = [
+  {max:.24, t:"Низька",      d:"Сценарії поки не керують вами жорстко. Але той, що вийшов уперед, варто тримати в полі зору."},
+  {max:.49, t:"Помітна",     d:"Сценарій уже впливає на ваші рішення, хоча ви ще можете чинити інакше, коли помічаєте його вчасно."},
+  {max:.74, t:"Висока",      d:"Сценарій працює на автоматі й забирає значну частину вашої свободи вибору."},
+  {max:1.01,t:"Дуже висока", d:"Кілька сценаріїв працюють одночасно й підсилюють один одного. Самій розплутати це справді складно."}
+];
+
+/* ============================================================
+   СТАН
+   ============================================================ */
+const picked = S.map(()=>new Set());
+let sphere = null;
+let cur = 0;               // 0..6 - питання, 7 - сфера
+const TOTAL_STEPS = 8;
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if(tg){ try{ tg.expand(); tg.ready(); }catch(e){} }
+
+const $ = id => document.getElementById(id);
+const CHECK = '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2 4.6 8.8 10 3.2" stroke="#14241D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ---------- побудова екранів питань ---------- */
+S.forEach((sc,i)=>{
+  const sec = document.createElement('section');
+  sec.className = 'screen';
+  sec.id = 'q'+i;
+  sec.innerHTML = `
+    <div class="qhead">
+      <div class="qnum">${i+1} / ${S.length}</div>
+      <h2>Що з цього про вас?</h2>
+      <div class="qhint">Відмічайте те, що впізнаєте в реальному житті. Не те, як хотілося б.</div>
+    </div>
+    <div class="opts">
+      ${sc.q.map((t,j)=>`<div class="opt" data-s="${i}" data-j="${j}"><div class="box">${CHECK}</div><span>${t}</span></div>`).join('')}
+    </div>
+    <button class="btn" onclick="next()">${i===S.length-1?'Далі':'Далі'}</button>
+    <button class="skip" onclick="next()">Нічого з цього про мене</button>
+  `;
+  $('q-host').appendChild(sec);
+});
+
+$('sphere-opts').innerHTML = SPHERES.map(s=>
+  `<div class="opt sph" data-sp="${s.id}"><div class="box">${CHECK}</div><span>${s.t}</span></div>`
+).join('');
+
+/* ---------- кліки ---------- */
+document.addEventListener('click', e=>{
+  const o = e.target.closest('.opt');
+  if(!o) return;
+  if(o.classList.contains('sph')){
+    document.querySelectorAll('.sph').forEach(x=>x.classList.remove('sel'));
+    o.classList.add('sel');
+    sphere = o.dataset.sp;
+    return;
+  }
+  const i = +o.dataset.s, j = +o.dataset.j;
+  if(picked[i].has(j)){ picked[i].delete(j); o.classList.remove('sel'); }
+  else { picked[i].add(j); o.classList.add('sel'); }
+  const skip = o.closest('.screen').querySelector('.skip');
+  if(skip) skip.style.visibility = picked[i].size ? 'hidden' : 'visible';
+});
+
+/* ---------- навігація ---------- */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $(id).classList.add('on');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function bar(step,label){
+  $('topbar').style.display='block';
+  $('fill').style.width = (step/TOTAL_STEPS*100)+'%';
+  $('stepnow').textContent = 'Крок '+step+' з '+TOTAL_STEPS;
+  $('stepname').textContent = label||'';
+}
+function start(){ cur=0; show('q0'); bar(1,''); }
+function next(){
+  cur++;
+  if(cur < S.length){ show('q'+cur); bar(cur+1,''); }
+  else { show('s-sphere'); bar(8,'майже готово'); }
+}
+
+/* ---------- результат ---------- */
+function finish(){
+  const scores = S.map((sc,i)=>({sc, n:picked[i].size, pct:Math.round(picked[i].size/sc.q.length*100)}));
+  const total = scores.reduce((a,b)=>a+b.n,0);
+  const maxTotal = S.length*5;
+  const sorted = [...scores].sort((a,b)=> b.n-a.n || PRIORITY.indexOf(a.sc.id)-PRIORITY.indexOf(b.sc.id));
+
+  $('topbar').style.display='none';
+
+  if(total === 0){ renderEmpty(); return; }
+
+  const lead = sorted[0];
+  const second = sorted[1];
+  const tie = second && second.n === lead.n && second.n > 0;
+  const ratio = total/maxTotal;
+  const lvl = LEVELS.find(l=>ratio<=l.max);
+  const gaugeOn = Math.max(1, Math.round(ratio*10));
+  const sphereTxt = sphere ? SPHERES.find(x=>x.id===sphere).t.split(':')[0] : null;
+
+  const barsHtml = sorted.map((r,k)=>`
+    <div class="bar-row ${k===0?'lead':''} ${k===1&&tie?'lead':(k===1?'second':'')}">
+      <div class="bar-top"><span class="bar-name">${r.sc.name}</span><span class="bar-val">${r.pct}%</span></div>
+      <div class="bar-track"><div class="bar-fill" data-w="${r.pct}"></div></div>
+    </div>`).join('');
+
+  const link = BOT_LINK;
+
+  $('s-result').innerHTML = `
+    <div class="res-top">
+      <div class="res-eyebrow">Ваш провідний сценарій</div>
+      <div class="res-name">«${lead.sc.name}»</div>
+      <div class="res-share">З п’яти тверджень ви відмітили ${lead.n}</div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <h3>Як це виглядає збоку</h3>
+      <p>${lead.sc.outside}</p>
+    </div>
+
+    <div class="card">
+      <h3>Що при цьому всередині</h3>
+      <p>${lead.sc.inside}</p>
+    </div>
+
+    <div class="card">
+      <h3>Ціна цього сценарію</h3>
+      <ul class="price">${lead.sc.price.map(p=>`<li><span><b>${p[0]}.</b> ${p[1]}</span></li>`).join('')}</ul>
+    </div>
+
+    <div class="card">
+      <h3>Ваш профіль по всіх семи</h3>
+      <div class="bars">${barsHtml}</div>
+    </div>
+
+    ${tie ? `
+    <div class="card">
+      <h3>Два сценарії в парі</h3>
+      <p>У вас однаково сильно проявилися «${lead.sc.name}» і «${second.sc.name}». Це не помилка тесту, так буває часто. Один сценарій зазвичай прикриває другий: зовні працює один механізм, а тримається він на страху з іншого. Розплутувати їх доведеться разом.</p>
+    </div>` : (second && second.n>0 ? `
+    <div class="card">
+      <h3>Тіньовий сценарій: «${second.sc.name}»</h3>
+      <p>Він проявляється слабше, але вмикається саме тоді, коли ви починаєте виходити з основного. Тому спроби змінитися часто буксують: ви робите крок, і другий сценарій м’яко повертає вас назад.</p>
+    </div>` : '')}
+
+    <div class="card">
+      <h3>Наскільки сильно сценарії керують вами</h3>
+      <div class="gauge">${Array.from({length:10},(_,k)=>`<i class="${k<gaugeOn?'on':''}"></i>`).join('')}</div>
+      <div class="gauge-txt"><span><b>${lvl.t}</b> інтенсивність</span><span>${total} з ${maxTotal}</span></div>
+      <p style="margin-top:12px">${lvl.d}</p>
+    </div>
+
+    <div class="card step-card">
+      <h3>Що можна зробити вже сьогодні</h3>
+      <p>${lead.sc.step}</p>
+    </div>
+
+    <div class="diag">
+      <h2>Розібрати це на діагностиці</h2>
+      <p>30 хвилин зі мною онлайн.${sphereTxt?` Ви відмітили, що найгостріше це відчувається у сфері «${sphereTxt}». Звідти й почнемо.`:''}</p>
+      <ul>
+        ${lead.sc.diag.map(d=>`<li>${d}</li>`).join('')}
+        <li>перший крок, з якого варто починати саме вам</li>
+      </ul>
+      <a class="btn" href="${link}" target="_blank" rel="noopener" onclick="return cta(event,'${lead.sc.id}',${lead.n},'${second?second.sc.id:''}')">Хочу діагностику</a>
+    </div>
+
+    <p class="footnote">Якщо побачу, що можу бути корисною далі, розповім про свою програму наставництва.<br>Але скажу чесно: я працюю не з усіма.</p>
+    <button class="restart" onclick="location.reload()">Пройти тест ще раз</button>
+  `;
+  reveal();
+}
+function reveal(){
+  show('s-result');
+  requestAnimationFrame(()=>setTimeout(()=>{
+    document.querySelectorAll('.bar-fill').forEach(b=>b.style.width=b.dataset.w+'%');
+  },120));
+}
+
+function renderEmpty(){
+  const link = BOT_LINK;
+  $('s-result').innerHTML = `
+    <div class="res-top">
+      <div class="res-eyebrow">Результат</div>
+      <div class="res-name">Ви не відмітили<br>жодного твердження</div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <p>І тут можливі рівно два варіанти.</p>
+      <p>Перший: сценарії справді не про вас. І це чудова новина.</p>
+      <p>Другий: спрацював найпоширеніший захист психіки. Те саме «це точно не про мене», про яке я попереджала на початку. Наш мозок дуже добре вміє пояснювати власну поведінку. І найкраще він робить це саме тоді, коли впізнавання виявляється надто болючим.</p>
+      <p>Самій відрізнити перше від другого майже неможливо. Але це якраз те, що видно за 15 хвилин розмови.</p>
+    </div>
+    <div class="diag">
+      <h2>Перевірити на діагностиці</h2>
+      <p>30 хвилин зі мною онлайн. Без тестів. На конкретних ситуаціях з вашого життя.</p>
+      <a class="btn" href="${link}" target="_blank" rel="noopener" onclick="return cta(event,'none',0,'')">Хочу діагностику</a>
+    </div>
+    <button class="restart" onclick="location.reload()">Пройти тест ще раз</button>`;
+  reveal();
+}
+
+/* Telegram Mini App: віддати результат у бота замість переходу за лінком */
+function cta(e, id, n, second){
+  if(tg && tg.initData){
+    e.preventDefault();
+    tg.sendData(JSON.stringify({scenario:id, score:n, shadow:second, sphere:sphere, action:"diagnostics"}));
+    tg.close();
+    return false;
+  }
+  return true;
+}
+</script>
+</body>
+</html>
