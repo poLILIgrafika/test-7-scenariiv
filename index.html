@@ -35,6 +35,9 @@
   --clay-deep:#EBC96A;
   --green:#0E1A15;
   --green-mid:#6FA285;
+  --w:420px;
+  --scale:1;
+  --design-w:420;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{
@@ -46,23 +49,35 @@ html{
 }
 body{
   width:100%;
-  max-width:420px;
-  margin:0 auto;
-  background:
-    radial-gradient(1100px 560px at 12% -8%, rgba(217,178,79,.13), transparent 60%),
-    radial-gradient(900px 520px at 108% 8%, rgba(111,162,133,.16), transparent 55%),
-    radial-gradient(1000px 700px at 50% 115%, rgba(217,178,79,.07), transparent 60%),
-    linear-gradient(180deg, #17291F 0%, #0F1D17 55%, #0B1611 100%);
-  background-attachment:fixed;
+  margin:0;
+  background:#0B1611;
   color:var(--ink);
   font-family:'Inter',system-ui,-apple-system,sans-serif;
   font-size:16px;line-height:1.55;
   min-height:100vh;
   min-height:var(--tg-viewport-stable-height,100vh);
   overflow-x:hidden;
-  padding:0 0 40px;
 }
-.wrap{width:100%;padding:0 20px}
+.scale-viewport{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  overflow:hidden;
+  background:
+    radial-gradient(1100px 560px at 12% -8%, rgba(217,178,79,.13), transparent 60%),
+    radial-gradient(900px 520px at 108% 8%, rgba(111,162,133,.16), transparent 55%),
+    radial-gradient(1000px 700px at 50% 115%, rgba(217,178,79,.07), transparent 60%),
+    linear-gradient(180deg, #17291F 0%, #0F1D17 55%, #0B1611 100%);
+}
+.wrap{
+  width:var(--w);
+  flex:0 0 auto;
+  align-self:flex-start;
+  transform-origin:top center;
+  position:relative;
+  padding:0 20px 40px;
+}
 
 /* ---------- progress ---------- */
 .topbar{
@@ -254,6 +269,7 @@ em{font-family:'Lora',Georgia,serif;font-style:italic}
 </head>
 <body>
 
+<div class="scale-viewport" id="scaleViewport">
 <div class="wrap" id="page">
 
 <div class="topbar" id="topbar" style="display:none">
@@ -298,6 +314,62 @@ em{font-family:'Lora',Georgia,serif;font-style:italic}
   <section class="screen" id="s-result"></section>
 
 </div>
+</div>
+
+<script>
+/* Масштаб 420px: у боті Telegram WebView часто дає ~980px layout (overview).
+   Тоді розтягуємо макет на всю ширину layout — на екрані стає на повну ширину. */
+(function(){
+  const page=document.getElementById('page');
+  const viewport=document.getElementById('scaleViewport');
+  const root=document.documentElement;
+  const DESIGN=420;
+  let raf=0;
+
+  const layoutWidth=()=>{
+    const tg=window.Telegram&&window.Telegram.WebApp;
+    if(tg&&tg.viewportWidth>0) return Math.round(tg.viewportWidth);
+    if(window.visualViewport&&visualViewport.width>0) return Math.round(visualViewport.width);
+    return root.clientWidth||window.innerWidth||DESIGN;
+  };
+
+  const inTelegram=()=> !!(window.Telegram&&window.Telegram.WebApp);
+
+  const apply=()=>{
+    raf=0;
+    const lw=layoutWidth();
+    // У Telegram (бот/чат) завжди заповнюємо реальну ширину WebView.
+    // Поза Telegram — максимум 420.
+    const target=inTelegram()? Math.max(lw,1) : Math.min(DESIGN,lw);
+    const scale=target/DESIGN;
+    root.style.setProperty('--scale',String(scale));
+    viewport.style.height='auto';
+    page.style.transform='scale('+scale+')';
+    const naturalH=page.scrollHeight||page.offsetHeight;
+    viewport.style.height=Math.ceil(naturalH*scale)+'px';
+  };
+
+  const schedule=()=>{ if(!raf) raf=requestAnimationFrame(apply); };
+  window.__relayoutScale=schedule;
+
+  window.addEventListener('resize',schedule,{passive:true});
+  window.addEventListener('orientationchange',schedule);
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize',schedule,{passive:true});
+  }
+  const tg=window.Telegram&&window.Telegram.WebApp;
+  if(tg&&tg.onEvent){
+    tg.onEvent('viewportChanged',schedule);
+    tg.onEvent('fullscreenChanged',schedule);
+  }
+  window.addEventListener('load',schedule);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(schedule).catch(function(){});
+  if(window.ResizeObserver) new ResizeObserver(schedule).observe(page);
+  apply();
+  setTimeout(apply,50);
+  setTimeout(apply,300);
+})();
+</script>
 
 <script>
 /* ============================================================
@@ -561,12 +633,14 @@ function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   $(id).classList.add('on');
   window.scrollTo({top:0,behavior:'instant'});
+  if(window.__relayoutScale) window.__relayoutScale();
 }
 function bar(step,label){
   $('topbar').style.display='block';
   $('fill').style.width = (step/TOTAL_STEPS*100)+'%';
   $('stepnow').textContent = 'Крок '+step+' з '+TOTAL_STEPS;
   $('stepname').textContent = label||'';
+  if(window.__relayoutScale) window.__relayoutScale();
 }
 function start(){ cur=0; show('q0'); bar(1,''); }
 function next(){
@@ -670,6 +744,7 @@ function reveal(){
   show('s-result');
   requestAnimationFrame(()=>setTimeout(()=>{
     document.querySelectorAll('.bar-fill').forEach(b=>b.style.width=b.dataset.w+'%');
+    if(window.__relayoutScale) window.__relayoutScale();
   },120));
 }
 
